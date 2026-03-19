@@ -78,4 +78,6 @@ Input only (no stdout output):
 - `{"action": "invoke", "name": "callback-name", "args": []}` — invoke callback
 - `{"action": "invoke", "name": "GlobalName::callback-name", "args": []}` — invoke global callback
 
+**Known bug (`fix.md`):** `HeadlessWindowAdapter::request_redraw()` is a no-op, so property changes via stdin JSON commands are never reflected in the output PNG. The `SoftwareRenderer` dirty region is only set once during `show()` and never updated. Fix: implement `request_redraw()` to call `m_renderer.mark_dirty_region()` over the full window.
+
 **Build warnings:** Compiled with `-Wall -Wextra -Wpedantic` (GCC/Clang). Keep the build warning-free.

@@ -177,6 +177,7 @@ class HeadlessWindowAdapter : public slint::platform::WindowAdapter {
     slint::platform::SoftwareRenderer m_renderer;
     slint::PhysicalSize m_size;
     bool m_visible = false;
+    bool m_needs_redraw = false;
 
 public:
     HeadlessWindowAdapter(uint32_t width, uint32_t height)
@@ -202,10 +203,19 @@ public:
                                                              static_cast<float>(size.height) }));
     }
 
-    void request_redraw() override { }
+    void request_redraw() override {
+        m_needs_redraw = true;
+    }
 
     // Render to a pixel buffer and save as PNG
     bool render_to_png(const std::string& path) {
+        if (m_needs_redraw) {
+            // Re-dispatch a resize event to mark the full window dirty so the
+            // renderer re-evaluates all property bindings on the next render().
+            window().dispatch_resize_event(slint::LogicalSize(
+                { static_cast<float>(m_size.width), static_cast<float>(m_size.height) }));
+            m_needs_redraw = false;
+        }
         uint32_t width = m_size.width;
         uint32_t height = m_size.height;
         std::vector<slint::Rgb8Pixel> buffer(width * height);
